@@ -1,8 +1,6 @@
-/**
- * HTML Generator - Dynamically creates the product grid and details content
- */
 
-// GSAP Demo data
+
+// GSAP Dmo data
 const gsapDemos = [
   { 
     id: 1, 
