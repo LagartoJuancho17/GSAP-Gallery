@@ -1,5 +1,5 @@
-import { preloadImages } from './utils.js'
 import { generateHTML, gsapDemos } from './htmlGenerator.js'
+import { preloadImages } from './utils.js'
 
 // GSAP is loaded globally via script tags
 
@@ -51,6 +51,7 @@ class Grid {
         this.addEvents()
         this.observeProducts()
         this.handleDetails()
+        this.setupHoverEffects()
       }
     })
   }
@@ -143,6 +144,105 @@ class Grid {
         this.handleCursor(e)
       }
     })
+  }
+
+  setupHoverEffects() {
+    // Hover circle behind image showing the GSAP demo title
+    this.products.forEach((product) => {
+      const onEnter = () => {
+        if (this.SHOW_DETAILS) return;
+
+        const id = parseInt(product.dataset.id, 10);
+        const demo = gsapDemos.find(d => d.id === id);
+        const title = demo ? demo.title : '';
+
+        // Ensure positioning context for absolutely positioned overlay
+        if (getComputedStyle(product).position === 'static') {
+          product.style.position = 'relative';
+        }
+
+        // Clean any previous circle (fast re-entries)
+        if (product._hoverCircle && product._hoverCircle.parentNode) {
+          product._hoverCircle.parentNode.removeChild(product._hoverCircle);
+          product._hoverCircle = null;
+        }
+
+        const circle = document.createElement('div');
+        circle.className = 'hover-circle';
+
+        const size = Math.round(Math.min(product.clientWidth, product.clientHeight) * 1.3);
+        Object.assign(circle.style, {
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          width: size + 'px',
+          height: size + 'px',
+          transform: 'translate(-50%, -50%)',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.99)',
+          color: 'black',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '12px',
+          lineHeight: '1.2',
+          fontSize: 'clamp(30px, 1vw, 16px)',
+          fontWeight: '600',
+          pointerEvents: 'none',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.25)'
+        });
+
+        const label = document.createElement('span');
+        label.textContent = title;
+        // push the label slightly below the center
+        Object.assign(label.style, {
+          transform: 'translateY(160px)',
+          display: 'block'
+        });
+        circle.appendChild(label);
+
+        // Insert as first child so image (which is later in DOM) stays above
+        if (product.firstChild) {
+          product.insertBefore(circle, product.firstChild);
+        } else {
+          product.appendChild(circle);
+        }
+
+        product._hoverCircle = circle;
+
+        gsap.set(circle, { scale: 0.2, opacity: 0 });
+        gsap.to(circle, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.7)' });
+        const img = product.querySelector('img');
+        if (img) {
+          gsap.to(img, { scale: 0.92, duration: 0.3, ease: 'power2.out' });
+        }
+      };
+
+      const onLeave = () => {
+        const circle = product._hoverCircle;
+        product._hoverCircle = null;
+        if (!circle) return;
+
+        gsap.to(circle, {
+          scale: 0.2,
+          opacity: 0,
+          duration: 0.25,
+          ease: 'power2.in',
+          onComplete: () => {
+            if (circle.parentNode) circle.parentNode.removeChild(circle);
+          }
+        });
+
+        const img = product.querySelector('img');
+        if (img) {
+          gsap.to(img, { scale: 1, duration: 0.25, ease: 'power2.in' });
+        }
+      };
+
+      product.addEventListener('mouseenter', onEnter);
+      product.addEventListener('mouseleave', onLeave);
+    });
   }
 
   updateBounds() {
