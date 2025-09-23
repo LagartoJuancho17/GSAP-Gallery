@@ -35,17 +35,17 @@ class Grid {
     timeline.to(this.products, {
       scale: 1,
       opacity: 1,
-      duration: 0.6,
-      ease: "power3.out",
+      duration: 1.2,
+      ease: "power2.out",
       stagger: {
-        amount: 1.2,
+        amount: 2.4,
         from: "random"
       }
     })
     timeline.to(this.dom, {
       scale: 1,
-      duration: 1.2,
-      ease: "power3.inOut",
+      duration: 1.6,
+      ease: "power2.inOut",
       onComplete: () => {
         this.setupDraggable()
         this.addEvents()
@@ -331,14 +331,14 @@ class Grid {
 
     gsap.to(this.dom, {
       x: "-50vw",
-      duration: 1.2,
-      ease: "power3.inOut",
+      duration: 1.6,
+      ease: "power2.inOut",
     })
 
     gsap.to(this.details, {
       x: 0,
-      duration: 1.2,
-      ease: "power3.inOut",
+      duration: 1.6,
+      ease: "power2.inOut",
     })
 
     this.flipProduct(product)
@@ -377,9 +377,9 @@ class Grid {
 
     gsap.to(this.dom, {
       x: 0,
-      duration: 1.2,
-      delay: .3,
-      ease: "power3.inOut",
+      duration: 1.6,
+      delay: .4,
+      ease: "power2.inOut",
       onComplete: () => {
         this.details.classList.remove("--is-showing")
       }
@@ -387,9 +387,9 @@ class Grid {
 
     gsap.to(this.details, {
       x: "50vw",
-      duration: 1.2,
-      delay: .3,
-      ease: "power3.inOut"
+      duration: 1.6,
+      delay: .4,
+      ease: "power2.inOut"
     })
 
     this.unFlipProduct()
@@ -504,14 +504,14 @@ class Grid {
 
     Flip.from(state, {
       absolute: true,
-      duration: 1.2,
-      ease: "power3.inOut",
+      duration: 1.6,
+      ease: "power2.inOut",
     })
 
     gsap.to(this.cross, {
       scale: 1,
-      duration: 0.4,
-      delay: .5,
+      duration: 0.6,
+      delay: .6,
       ease: "power2.out"
     })
   }
@@ -521,7 +521,7 @@ class Grid {
 
     gsap.to(this.cross, {
       scale: 0,
-      duration: 0.4,
+      duration: 0.6,
       ease: "power2.out"
     })
 
@@ -544,9 +544,9 @@ class Grid {
       left: finalRect.left - this.detailsThumb.getBoundingClientRect().left + "px",
       width: finalRect.width + "px",
       height: finalRect.height + "px",
-      duration: 1.2,
-      delay: .3,
-      ease: "power3.inOut",
+      duration: 1.6,
+      delay: .4,
+      ease: "power2.inOut",
       onComplete: () => {
         this.originalParent.appendChild(this.currentProduct)
 
@@ -587,7 +587,68 @@ const grid = new Grid()
 // Make grid instance globally available for onclick handlers
 window.gridInstance = grid
 
-preloadImages('.grid img').then(() => {
-  grid.init()
-  document.body.classList.remove('loading')
+// Preloader elements and behavior
+const preloaderEl = document.getElementById('preloader')
+const preloaderCounterEl = document.getElementById('preloader-counter')
+const preloaderLineFillEl = document.querySelector('.preloader-line__fill')
+// Lock scroll while loading
+document.body.style.overflow = 'hidden'
+// Track start time to enforce total duration
+const PRELOADER_MIN_TOTAL_MS = 5000
+// Duration of the panel opening sequence (counter fade 0.8s + panels 1.4s + fade 0.6s with 0.4s overlap = 2.4s)
+const PANEL_SEQUENCE_MS = 2400
+const preloadStartTs = performance.now()
+// Visual portion before panels open
+const PRELOADER_VIS_MS = Math.max(0, PRELOADER_MIN_TOTAL_MS - PANEL_SEQUENCE_MS)
+
+// Smoothly animate the counter 0 -> 100 during the visual preload window
+if (preloaderCounterEl && PRELOADER_VIS_MS > 0) {
+  const counterObj = { v: 0 }
+  gsap.to(counterObj, {
+    v: 100,
+    duration: PRELOADER_VIS_MS / 1500,
+    ease: 'none',
+    onUpdate: () => {
+      preloaderCounterEl.textContent = String(Math.floor(counterObj.v))
+    }
+  })
+}
+
+preloadImages('.grid img', (progress) => {
+  // Only increase displayed value; keep smooth tween control
+  if (preloaderCounterEl) {
+    const current = parseInt(preloaderCounterEl.textContent || '0', 10)
+    const candidate = Math.floor(progress * 100)
+    if (candidate > current) {
+      preloaderCounterEl.textContent = String(candidate)
+    }
+  }
+}).then(() => {
+  // Hide preloader with split-panel opening animation, then init grid
+  if (preloaderEl) {
+    const topPanel = preloaderEl.querySelector('.preloader-panel--top')
+    const bottomPanel = preloaderEl.querySelector('.preloader-panel--bottom')
+
+    const elapsed = performance.now() - preloadStartTs
+    const waitBeforePanels = Math.max(0, PRELOADER_MIN_TOTAL_MS - PANEL_SEQUENCE_MS - elapsed)
+
+    setTimeout(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } })
+      tl.to(preloaderCounterEl, { opacity: 0, duration: 0.8 })
+        .to(topPanel, { yPercent: -100, duration: 1.4 }, '<')
+        .to(bottomPanel, { yPercent: 100, duration: 1.4 }, '<')
+        .to(preloaderEl, { opacity: 0, duration: 0.6 }, '-=0.4')
+        .add(() => {
+          preloaderEl.style.display = 'none'
+          document.body.classList.remove('loading')
+          document.body.style.overflow = 'auto'
+          grid.init()
+        })
+    }, waitBeforePanels)
+  } else {
+    // Fallback
+    document.body.classList.remove('loading')
+    document.body.style.overflow = 'auto'
+    grid.init()
+  }
 })
