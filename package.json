@@ -1,4 +1,21 @@
 {
+  "name": "gsap-gallery",
+  "version": "1.0.0",
+  "description": "Galería interactiva con GSAP, drag, preloader y demos animadas.",
+  "author": "Tobias Arraiza",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "gsap",
+    "gallery",
+    "animations",
+    "javascript",
+    "flip",
+    "draggable"
+  ],
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
   "dependencies": {
     "gsap": "^3.13.0"
   }

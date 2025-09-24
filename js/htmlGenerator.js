@@ -1,6 +1,6 @@
 
 
-// GSAP Dmo data
+
 const gsapDemos = [
   { 
     id: 1, 
@@ -163,14 +163,12 @@ function createCross() {
   `;
 }
 
-/**
- * Generates and injects all HTML content into the main element
- */
+// Genero todo el HTML
 function generateHTML() {
   const main = document.querySelector('main');
   if (!main) return;
 
-  // Create header
+  // Header
   const header = `
     <header class="frame">
       <h1 class="frame__title">
@@ -180,12 +178,12 @@ function generateHTML() {
     </header>
   `;
 
-  // Combine all elements
+  // Combino todo
   const content = header + createGrid() + createDetails() + createCross();
   
   main.innerHTML = content;
 }
 
-// Export for use in other modules
+// Exporto para usar en otros modulos
 export { generateHTML, gsapDemos };
 

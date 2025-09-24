@@ -1,19 +1,16 @@
 import { generateHTML, gsapDemos } from './htmlGenerator.js'
 import { preloadImages } from './utils.js'
 
-// GSAP is loaded globally via script tags
+
 
 class Grid {
   constructor() {
     this.dom = document.querySelector(".container")
     this.grid = document.querySelector(".grid")
     this.products = [...document.querySelectorAll(".product div")]
-
     this.details = document.querySelector(".details")
     this.detailsThumb = this.details.querySelector(".details__thumb")
-
     this.cross = document.querySelector(".cross")
-
     this.isDragging = false
   }
 
@@ -76,8 +73,8 @@ class Grid {
 
     // Calculate infinite scroll parameters
     this.gridWidth = this.grid.offsetWidth
-    this.basePatternWidth = this.gridWidth / 5 // Since we repeat the pattern 5 times
-    this.resetThreshold = this.basePatternWidth * 2 // Reset when we've scrolled 2 pattern widths
+    this.basePatternWidth = this.gridWidth / 10 //repetir el patron 10 veces
+    this.resetThreshold = this.basePatternWidth * 5 //Resetea si scrolleamos 5 veces
 
     this.draggable = Draggable.create(this.grid, {
       type: "x,y",
@@ -147,7 +144,7 @@ class Grid {
   }
 
   setupHoverEffects() {
-    // Hover circle behind image showing the GSAP demo title
+    // Hover 
     this.products.forEach((product) => {
       const onEnter = () => {
         if (this.SHOW_DETAILS) return;
@@ -195,14 +192,13 @@ class Grid {
 
         const label = document.createElement('span');
         label.textContent = title;
-        // push the label slightly below the center
+        // Bajo la palabra
         Object.assign(label.style, {
           transform: 'translateY(160px)',
           display: 'block'
         });
         circle.appendChild(label);
 
-        // Insert as first child so image (which is later in DOM) stays above
         if (product.firstChild) {
           product.insertBefore(circle, product.firstChild);
         } else {
