@@ -194,7 +194,7 @@ class Grid {
         label.textContent = title;
         // Bajo la palabra
         Object.assign(label.style, {
-          transform: 'translateY(160px)',
+          transform: 'translateY(9rem)',
           display: 'block'
         });
         circle.appendChild(label);
