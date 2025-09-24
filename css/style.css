@@ -12,20 +12,16 @@
   transform-origin: center center;
   will-change: transform;
 
-  &:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000;
-    z-index: 2;
-    pointer-events: none;
+}
 
-    opacity: 0;
-    transition: opacity 0.45s ease-in-out;
-  }
+/* Ensure demo UI is above the thumb and any overlays */
+.details__texts .demo-container,
+.details__texts .demo-box,
+.details__texts .code-block,
+.details__texts .run-demo-btn,
+.details__texts .reset-demo-btn {
+  position: relative;
+  z-index: 5;
 }
 
 .grid {
@@ -133,6 +129,7 @@
   line-height: 1.5;
   display: grid;
   max-width: 15rem;
+  z-index: 5;
 
   span {
     display: block;

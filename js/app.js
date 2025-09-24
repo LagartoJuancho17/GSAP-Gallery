@@ -309,7 +309,7 @@ class Grid {
 
     // Set initial states for animations
     gsap.set(this.titles, { opacity: 0, y: 50 })
-    gsap.set(this.texts, { opacity: 0, y: 30 })
+    gsap.set(this.texts, { opacity: 0, y: 30, pointerEvents: 'none' })
 
     this.products.forEach(product => {
       product.addEventListener("click", (e) => {
@@ -364,6 +364,16 @@ class Grid {
         delay: .6,
         ease: "power3.inOut"
       })
+      // Disable interactions on all code-blocks, enable only the active one
+      this.texts.forEach(el => {
+        if (el === text) {
+          el.style.pointerEvents = 'auto'
+        } else {
+          el.style.pointerEvents = 'none'
+          // Also hide others to ensure stacking doesn't capture clicks
+          gsap.set(el, { opacity: 0 })
+        }
+      })
       
       // Setup demo buttons immediately
       this.setupDemoButtons(product.dataset.id)
@@ -415,49 +425,69 @@ class Grid {
     console.log('Demo buttons ready for:', demoId)
   }
 
-  runDemo(demoId) {
-    console.log("Running demo for ID:", demoId, typeof demoId)
-    
-    // Find the currently visible demo box (the one that's shown in the details panel)
-    const visibleDemoContainer = document.querySelector('.details__texts [data-text]:not([style*="opacity: 0"])')
-    const demoBox = visibleDemoContainer ? visibleDemoContainer.querySelector('.demo-box') : null
-    
-    console.log('Visible demo container:', visibleDemoContainer)
-    console.log('Demo box found:', demoBox)
-    
+  runDemo(btnElOrId, maybeId) {
+    // Support both signatures: runDemo(id) and runDemo(btnEl, id)
+    const btnEl = (btnElOrId instanceof Element) ? btnElOrId : null
+    const rawId = btnEl && btnEl.dataset && btnEl.dataset.demoId ? btnEl.dataset.demoId : (maybeId ?? btnElOrId)
+    const id = parseInt(rawId)
+    console.log("Running demo for ID:", id)
+    // Find container: prefer from clicked button context
+    let container = null
+    if (btnEl) {
+      container = btnEl.closest('[data-desc]')
+    }
+    if (!container && this.details) {
+      container = this.details.querySelector(`[data-desc="${id}"]`)
+    }
+    const demoBox = container?.querySelector(`#demo-box-${id}`) || container?.querySelector('.demo-box')
+    console.log('Container found:', container)
+    console.log('DemoBox found:', demoBox)
+
     if (!demoBox) {
-      console.error('No visible demo box found')
+      console.error('No demo box found for id:', id)
       return
     }
 
+    // Stop any ongoing tweens on this specific box
+    gsap.killTweensOf(demoBox)
+    // Normalize baseline so each demo starts from the same state
+    gsap.set(demoBox, {
+      scale: 1,
+      rotation: 0,
+      x: 0,
+      y: 0,
+      opacity: 1,
+      backgroundColor: "#333"
+    })
+
+    // Visual confirmation flash (common to all demos)
+    gsap.fromTo(demoBox, { outline: '2px solid #00c853' }, { outline: 'none', duration: 0.4, ease: 'power1.out' })
+
     // Execute the specific animation based on demo ID
-    const id = parseInt(demoId)
-    console.log('Parsed ID:', id)
-    
     switch(id) {
       case 1: // Scale
         console.log('Running scale animation')
-        gsap.to(demoBox, { scale: 1.5, duration: 1 })
+        gsap.to(demoBox, { scale: 1.6, duration: 0.8, ease: 'power2.out', yoyo: true, repeat: 1 })
         break
       case 2: // Rotation
         console.log('Running rotation animation')
-        gsap.to(demoBox, { rotation: 360, duration: 2 })
+        gsap.to(demoBox, { rotation: 360, duration: 1.2, ease: 'power2.inOut' })
         break
       case 3: // Position
         console.log('Running position animation')
-        gsap.to(demoBox, { x: 100, y: 50, duration: 1.5 })
+        gsap.to(demoBox, { x: 120, y: 60, duration: 1.0, ease: 'power2.out', yoyo: true, repeat: 1 })
         break
       case 4: // Opacity
         console.log('Running opacity animation')
-        gsap.to(demoBox, { opacity: 0.3, duration: 1 })
+        gsap.to(demoBox, { opacity: 0.2, duration: 0.6, yoyo: true, repeat: 1, ease: 'power1.inOut' })
         break
       case 5: // Color
         console.log('Running color animation')
-        gsap.to(demoBox, { backgroundColor: "#ff6b6b", duration: 1 })
+        gsap.to(demoBox, { backgroundColor: "#ff6b6b", duration: 0.6, yoyo: true, repeat: 1, ease: 'power1.inOut' })
         break
       case 6: // Multiple properties
         console.log('Running multiple properties animation')
-        gsap.to(demoBox, { scale: 0.8, rotation: 180, x: 50, duration: 2 })
+        gsap.to(demoBox, { scale: 0.8, rotation: 180, x: 80, duration: 1.4, ease: 'power2.inOut', yoyo: true, repeat: 1 })
         break
       case 7: // Easing
         console.log('Running easing animation')
@@ -468,26 +498,37 @@ class Grid {
     }
   }
 
-  resetDemo(demoId) {
-    console.log("Resetting demo for ID:", demoId)
-    
-    // Find the currently visible demo box
-    const visibleDemoContainer = document.querySelector('.details__texts [data-text]:not([style*="opacity: 0"])')
-    const demoBox = visibleDemoContainer ? visibleDemoContainer.querySelector('.demo-box') : null
-    
-    if (demoBox) {
-      console.log('Resetting demo box:', demoBox)
-      gsap.set(demoBox, { 
-        scale: 1, 
-        rotation: 0, 
-        x: 0, 
-        y: 0, 
-        opacity: 1, 
-        backgroundColor: "#333" 
-      })
-    } else {
-      console.error('No visible demo box found for reset')
+  resetDemo(btnElOrId, maybeId) {
+    // Support both signatures: resetDemo(id) and resetDemo(btnEl, id)
+    const btnEl = (btnElOrId instanceof Element) ? btnElOrId : null
+    const rawId = btnEl && btnEl.dataset && btnEl.dataset.demoId ? btnEl.dataset.demoId : (maybeId ?? btnElOrId)
+    console.log("Resetting demo for ID:", rawId)
+    const id = parseInt(rawId)
+    let container = null
+    if (btnEl) {
+      container = btnEl.closest('[data-desc]')
     }
+    if (!container && this.details) {
+      container = this.details.querySelector(`[data-desc="${id}"]`)
+    }
+    const demoBox = container?.querySelector(`#demo-box-${id}`) || container?.querySelector('.demo-box')
+
+    if (!demoBox) {
+      console.error('No demo box found for reset, id:', id)
+      return
+    }
+
+    console.log('Resetting demo box:', demoBox)
+    // Stop any ongoing tweens and reset to clean baseline
+    gsap.killTweensOf(demoBox)
+    gsap.set(demoBox, { 
+      scale: 1, 
+      rotation: 0, 
+      x: 0, 
+      y: 0, 
+      opacity: 1, 
+      backgroundColor: "#333" 
+    })
   }
 
   flipProduct(product) {
@@ -587,68 +628,24 @@ const grid = new Grid()
 // Make grid instance globally available for onclick handlers
 window.gridInstance = grid
 
-// Preloader elements and behavior
-const preloaderEl = document.getElementById('preloader')
-const preloaderCounterEl = document.getElementById('preloader-counter')
-const preloaderLineFillEl = document.querySelector('.preloader-line__fill')
-// Lock scroll while loading
+// New preloader timeline (text-based animation)
+const preloaderEl = document.getElementById('preloader-animation')
 document.body.style.overflow = 'hidden'
-// Track start time to enforce total duration
-const PRELOADER_MIN_TOTAL_MS = 5000
-// Duration of the panel opening sequence (counter fade 0.8s + panels 1.4s + fade 0.6s with 0.4s overlap = 2.4s)
-const PANEL_SEQUENCE_MS = 2400
-const preloadStartTs = performance.now()
-// Visual portion before panels open
-const PRELOADER_VIS_MS = Math.max(0, PRELOADER_MIN_TOTAL_MS - PANEL_SEQUENCE_MS)
 
-// Smoothly animate the counter 0 -> 100 during the visual preload window
-if (preloaderCounterEl && PRELOADER_VIS_MS > 0) {
-  const counterObj = { v: 0 }
-  gsap.to(counterObj, {
-    v: 100,
-    duration: PRELOADER_VIS_MS / 1500,
-    ease: 'none',
-    onUpdate: () => {
-      preloaderCounterEl.textContent = String(Math.floor(counterObj.v))
-    }
-  })
-}
+const imagesReady = preloadImages('.grid img')
+const timelineReady = new Promise((resolve) => {
+  const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
+  tl.set('.animation', { yPercent: 0, force3D: true })
+    .to('.animate', { delay: 3, duration: 0.5, opacity: 0 })
+    .to('.animation', { delay: 0.6, duration: 0.9, yPercent: 101, force3D: true, clearProps: 'transform' })
+    .add(() => resolve())
+})
 
-preloadImages('.grid img', (progress) => {
-  // Only increase displayed value; keep smooth tween control
-  if (preloaderCounterEl) {
-    const current = parseInt(preloaderCounterEl.textContent || '0', 10)
-    const candidate = Math.floor(progress * 100)
-    if (candidate > current) {
-      preloaderCounterEl.textContent = String(candidate)
-    }
-  }
-}).then(() => {
-  // Hide preloader with split-panel opening animation, then init grid
+Promise.all([imagesReady, timelineReady]).then(() => {
   if (preloaderEl) {
-    const topPanel = preloaderEl.querySelector('.preloader-panel--top')
-    const bottomPanel = preloaderEl.querySelector('.preloader-panel--bottom')
-
-    const elapsed = performance.now() - preloadStartTs
-    const waitBeforePanels = Math.max(0, PRELOADER_MIN_TOTAL_MS - PANEL_SEQUENCE_MS - elapsed)
-
-    setTimeout(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } })
-      tl.to(preloaderCounterEl, { opacity: 0, duration: 0.8 })
-        .to(topPanel, { yPercent: -100, duration: 1.4 }, '<')
-        .to(bottomPanel, { yPercent: 100, duration: 1.4 }, '<')
-        .to(preloaderEl, { opacity: 0, duration: 0.6 }, '-=0.4')
-        .add(() => {
-          preloaderEl.style.display = 'none'
-          document.body.classList.remove('loading')
-          document.body.style.overflow = 'auto'
-          grid.init()
-        })
-    }, waitBeforePanels)
-  } else {
-    // Fallback
-    document.body.classList.remove('loading')
-    document.body.style.overflow = 'auto'
-    grid.init()
+    preloaderEl.style.display = 'none'
   }
+  document.body.classList.remove('loading')
+  document.body.style.overflow = 'auto'
+  grid.init()
 })
