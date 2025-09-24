@@ -1,6 +1,6 @@
 
 
-// GSAP Dmo data
+// 
 //estoy probando el branch de pruebas
 const gsapDemos = [
   { 
@@ -143,6 +143,12 @@ function createDetails() {
 
   return `
     <div class="details">
+      <button class="close-details" aria-label="Close details">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
       <div class="details__title">
         ${titles}
       </div>
@@ -157,7 +163,7 @@ function createDetails() {
 }
 
 /**
- * Generates the cross/close button
+ * Cross boton
  */
 function createCross() {
   return `
@@ -171,13 +177,13 @@ function createCross() {
 }
 
 /**
- * Generates and injects all HTML content into the main element
+ * Inyecto el HTML
  */
 function generateHTML() {
   const main = document.querySelector('main');
   if (!main) return;
 
-  // Create header
+  // header
   const header = `
     <header class="frame">
       <h1 class="frame__title">
@@ -187,11 +193,10 @@ function generateHTML() {
     </header>
   `;
 
-  // Combine all elements
+  // agrega todos los elementos
   const content = header + createGrid() + createDetails() + createCross();
   
   main.innerHTML = content;
 }
 
-// Export for use in other modules
 export { generateHTML, gsapDemos };

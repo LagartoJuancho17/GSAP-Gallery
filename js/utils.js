@@ -1,5 +1,5 @@
 /**
- * Preloads images specified by the CSS selector.
+ * 
  * @function
  * @param {string} [selector='img'] - CSS selector for target images.
  * @returns {Promise} - Resolves when all specified images are loaded.
@@ -33,7 +33,7 @@ const preloadImages = (selector = 'img') => {
   });
 };
 
-// Exporting utility functions for use in other modules.
+
 export {
   preloadImages
 };

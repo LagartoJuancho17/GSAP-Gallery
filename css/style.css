@@ -81,22 +81,52 @@
 
 .details {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 50vw;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
   height: 100vh;
   padding: 3vw 4vw;
   background-color: rgb(255, 255, 255);
-
-  transform: translate3d(50vw, 0, 0);
+  transform: translate3d(0, 100vh, 0);
   z-index: 6;
+  overflow-y: auto;
 
   @media (max-width: 600px) {
-    width: 90%;
+    width: 100vw;
     height: 100vh;
     padding: 8vw 7vw;
+    transform: translate3d(0, 100vh, 0);
+  }
+}
 
-    transform: translate3d(90%, 0, 0);
+.close-details {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: none;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 7;
+  transition: background-color 0.2s ease;
+  padding: 0;
+  
+  &:hover {
+    background: #e0e0e0;
+  }
+  
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  
+  path {
+    stroke: #333;
   }
 }
 

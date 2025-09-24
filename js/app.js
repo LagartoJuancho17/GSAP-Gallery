@@ -1,7 +1,7 @@
 import { preloadImages } from './utils.js'
 import { generateHTML, gsapDemos } from './htmlGenerator.js'
 
-// GSAP is loaded globally via script tags
+// cargo GSAP
 
 class Grid {
   constructor() {
@@ -73,10 +73,10 @@ class Grid {
   setupDraggable() {
     this.dom.classList.add("--is-loaded")
 
-    // Calculate infinite scroll parameters
+    // Calculo el scroll
     this.gridWidth = this.grid.offsetWidth
-    this.basePatternWidth = this.gridWidth / 5 // Since we repeat the pattern 5 times
-    this.resetThreshold = this.basePatternWidth * 2 // Reset when we've scrolled 2 pattern widths
+    this.basePatternWidth = this.gridWidth / 5 // Repito el pattern
+    this.resetThreshold = this.basePatternWidth * 2 // Reseteo cuando scrolleo 2 patrones
 
     this.draggable = Draggable.create(this.grid, {
       type: "x,y",
@@ -206,6 +206,7 @@ class Grid {
 
     this.titles = this.details.querySelectorAll(".details__title p")
     this.texts = this.details.querySelectorAll(".details__body [data-text]")
+    this.closeButton = this.details.querySelector(".close-details")
 
     // Set initial states for animations
     gsap.set(this.titles, { opacity: 0, y: 50 })
@@ -218,8 +219,17 @@ class Grid {
       })
     })
 
-    this.dom.addEventListener("click", (e) => {
-      if (this.SHOW_DETAILS) this.hideDemo()
+    // Close button click handler
+    this.closeButton.addEventListener("click", (e) => {
+      e.stopPropagation()
+      this.hideDemo()
+    })
+
+    // Close when clicking outside the details content
+    this.details.addEventListener("click", (e) => {
+      if (this.SHOW_DETAILS && e.target === this.details) {
+        this.hideDemo()
+      }
     })
   }
 
@@ -230,13 +240,14 @@ class Grid {
     this.dom.classList.add("--is-details-showing")
 
     gsap.to(this.dom, {
-      x: "-50vw",
+      scale: 0.8,
+      y: "-10vh",
       duration: 1.2,
       ease: "power3.inOut",
     })
 
     gsap.to(this.details, {
-      x: 0,
+      y: 0,
       duration: 1.2,
       ease: "power3.inOut",
     })
@@ -276,7 +287,8 @@ class Grid {
     this.dom.classList.remove("--is-details-showing")
 
     gsap.to(this.dom, {
-      x: 0,
+      scale: 1,
+      y: 0,
       duration: 1.2,
       delay: .3,
       ease: "power3.inOut",
@@ -286,7 +298,7 @@ class Grid {
     })
 
     gsap.to(this.details, {
-      x: "50vw",
+      y: "100vh",
       duration: 1.2,
       delay: .3,
       ease: "power3.inOut"
