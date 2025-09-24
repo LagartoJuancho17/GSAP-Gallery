@@ -3,6 +3,43 @@
   src: url('../public/TWK-Lausanne.woff2') format('woff2');
 }
 
+/* Preloader */
+.animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background-color: #1f1f1f;
+  color: #0AE448;
+  overflow: hidden;
+  z-index: 10000;
+  pointer-events: none;
+
+}
+
+.animate {
+  font-size: clamp(36px, 10vw, 100px);
+  text-transform: uppercase;
+  color: #0AE448;
+  animation: preloader-marquee 10s linear infinite;
+}
+
+.animate span {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px #ffffff;
+  margin: 0 10px;
+}
+
+@keyframes preloader-marquee {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 *,
 *::after,
 *::before {
@@ -14,7 +51,7 @@
 :root {
   font-size: 12px;
   --color-text: #1a1a1a;
-  --color-bg: #f1f1f1;
+  --color-bg: #fcfcfc;
   --color-link: #000000;
   --color-link-hover: #ffa6a6;
   --page-padding: 1.5rem;
@@ -40,34 +77,6 @@ body {
   margin: 0;
 }
 
-@media (scripting: enabled) {
-  .loading {
-    &::before,
-    &::after {
-      content: '';
-      position: fixed;
-      z-index: 10000;
-    }
-
-    &::before {
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--color-bg);
-    }
-
-    &::after {
-      top: 50%;
-      left: 50%;
-      width: 100px;
-      height: 1px;
-      margin: 0 0 0 -50px;
-      background: var(--color-link);
-      animation: loaderAnim 1.5s ease-in-out infinite alternate forwards;
-    }
-  }
-}
 
 @keyframes loaderAnim {
   0% {
@@ -195,4 +204,50 @@ a {
     justify-content: center;
     align-items: center;
   }
+}
+
+/* Preloader overlay */
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  z-index: 10001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preloader-counter {
+  font-size: 2rem;
+  color: var(--color-link);
+  font-family: 'TWK Lausanne', sans-serif;
+  position: relative;
+  z-index: 2;
+}
+
+/* Split panels for opening animation */
+.preloader-panels {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.preloader-panel {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50vh;
+  background: var(--color-bg);
+}
+
+.preloader-panel--top {
+  top: 0;
+}
+
+.preloader-panel--bottom {
+  bottom: 0;
 }

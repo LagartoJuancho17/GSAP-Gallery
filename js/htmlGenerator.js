@@ -1,7 +1,5 @@
 
-
-// 
-//estoy probando el branch de pruebas
+// HTML and data generators for GSAP demos
 const gsapDemos = [
   { 
     id: 1, 
@@ -54,7 +52,7 @@ const gsapDemos = [
   }
 ];
 
-// Base grid layout pattern - defines which products appear in each column
+// Base grid layout pattern 
 const baseGridLayout = [
   [3, 7, 1, 5, 2], // Column 1
   [4, 6, 3, 7, 1], // Column 2
@@ -68,7 +66,7 @@ const baseGridLayout = [
   [4, 6, 3, 5, 1]  // Column 10
 ];
 
-// Generate infinite grid by repeating the base pattern
+// Genero una grid infiita repitiendo la base 
 function generateInfiniteLayout(repetitions = 20) {
   const infiniteLayout = [];
   for (let i = 0; i < repetitions; i++) {
@@ -79,9 +77,7 @@ function generateInfiniteLayout(repetitions = 20) {
 
 const gridLayout = generateInfiniteLayout();
 
-/**
- * Generates a product element
- */
+//Genero un producto
 function createProductElement(productId) {
   return `
     <div class="product">
@@ -92,9 +88,7 @@ function createProductElement(productId) {
   `;
 }
 
-/**
- * Generates a column of products
- */
+//Genero una columna de productos
 function createColumn(productIds) {
   const products = productIds.map(id => createProductElement(id)).join('');
   return `
@@ -104,9 +98,8 @@ function createColumn(productIds) {
   `;
 }
 
-/**
- * Generates the complete grid
- */
+//Genero la grid completa
+
 function createGrid() {
   const columns = gridLayout.map(columnIds => createColumn(columnIds)).join('');
   return `
@@ -118,9 +111,8 @@ function createGrid() {
   `;
 }
 
-/**
- * Generates GSAP demo section
- */
+//seccion Demo de GSAP
+
 function createDetails() {
   const titles = gsapDemos.map(demo => 
     `<p data-title="${demo.id}" data-text>${demo.title}</p>`
@@ -136,8 +128,8 @@ function createDetails() {
         <code>${demo.code}</code>
       </div>
       <p class="demo-description">${demo.description}</p>
-      <button class="run-demo-btn" data-demo-id="${demo.id}" onclick="window.gridInstance.runDemo(${demo.id})">Ejecutar Animación</button>
-      <button class="reset-demo-btn" data-demo-id="${demo.id}" onclick="window.gridInstance.resetDemo(${demo.id})">Reset</button>
+      <button class="run-demo-btn" data-demo-id="${demo.id}" onclick="window.gridInstance.runDemo(this, ${demo.id})">Ejecutar Animación</button>
+      <button class="reset-demo-btn" data-demo-id="${demo.id}" onclick="window.gridInstance.resetDemo(this, ${demo.id})">Reset</button>
     </div>`
   ).join('');
 
@@ -176,14 +168,12 @@ function createCross() {
   `;
 }
 
-/**
- * Inyecto el HTML
- */
+// Genero e inyecto todo el HTML
 function generateHTML() {
   const main = document.querySelector('main');
   if (!main) return;
 
-  // header
+  // Header
   const header = `
     <header class="frame">
       <h1 class="frame__title">
@@ -193,10 +183,12 @@ function generateHTML() {
     </header>
   `;
 
-  // agrega todos los elementos
+  // Combino todo
   const content = header + createGrid() + createDetails() + createCross();
   
   main.innerHTML = content;
 }
 
+// Exporto para usar en otros modulos
 export { generateHTML, gsapDemos };
+

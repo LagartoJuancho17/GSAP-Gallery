@@ -4,7 +4,7 @@
  * @param {string} [selector='img'] - CSS selector for target images.
  * @returns {Promise} - Resolves when all specified images are loaded.
  */
-const preloadImages = (selector = 'img') => {
+const preloadImages = (selector = 'img', onProgress) => {
   return new Promise((resolve) => {
     const images = document.querySelectorAll(selector);
     let loadedCount = 0;
@@ -17,6 +17,9 @@ const preloadImages = (selector = 'img') => {
 
     const checkAllLoaded = () => {
       loadedCount++;
+      if (typeof onProgress === 'function' && totalImages > 0) {
+        onProgress(loadedCount / totalImages);
+      }
       if (loadedCount === totalImages) {
         resolve();
       }
