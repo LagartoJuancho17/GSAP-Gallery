@@ -1,8 +1,6 @@
 import { generateHTML, gsapDemos } from './htmlGenerator.js'
-import { preloadImages } from './utils.js'
 
-
-
+//Clase Grid que representa la grilla de productos y sus funcionalidades 
 class Grid {
   constructor() {
     this.dom = document.querySelector(".container")
@@ -20,7 +18,7 @@ class Grid {
 
   intro() {
     this.centerGrid()
-
+// Timeline para animar la grilla 
     const timeline = gsap.timeline()
 
     timeline.set(this.dom, { scale: .5 })
@@ -71,7 +69,7 @@ class Grid {
   setupDraggable() {
     this.dom.classList.add("--is-loaded")
 
-    // Calculate infinite scroll parameters
+    // SCROLL INFINITO
     this.gridWidth = this.grid.offsetWidth
     this.basePatternWidth = this.gridWidth / 10 //repetir el patron 10 veces
     this.resetThreshold = this.basePatternWidth * 5 //Resetea si scrolleamos 5 veces
@@ -134,6 +132,16 @@ class Grid {
 
     window.addEventListener("resize", () => {
       this.updateBounds()
+      // If details are open, ensure the panel is positioned correctly for the current viewport
+      if (this.SHOW_DETAILS) {
+        if (this.isMobile()) {
+          gsap.set(this.details, { x: 0, y: 0 })
+          gsap.set(this.dom, { x: 0 })
+        } else {
+          gsap.set(this.details, { x: 0, y: 0 })
+          gsap.set(this.dom, { x: "-50vw", y: 0, scale: 1 })
+        }
+      }
     })
 
     window.addEventListener("mousemove", (e) => {
@@ -174,7 +182,7 @@ class Grid {
           top: '50%',
           width: size + 'px',
           height: size + 'px',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translate(-50%, -50%  )',
           borderRadius: '50%',
           background: 'rgba(255, 255, 255, 0.99)',
           color: 'black',
@@ -194,7 +202,7 @@ class Grid {
         label.textContent = title;
         // Bajo la palabra
         Object.assign(label.style, {
-          transform: 'translateY(160px)',
+          transform: 'translateY(8.5rem)',
           display: 'block'
         });
         circle.appendChild(label);
@@ -325,17 +333,31 @@ class Grid {
     this.details.classList.add("--is-showing")
     this.dom.classList.add("--is-details-showing")
 
-    gsap.to(this.dom, {
-      x: "-50vw",
-      duration: 1.6,
-      ease: "power2.inOut",
-    })
-
-    gsap.to(this.details, {
-      x: 0,
-      duration: 1.6,
-      ease: "power2.inOut",
-    })
+    if (this.isMobile()) {
+      // Mobile: details slide up from bottom, main container stays but can subtly scale
+      gsap.to(this.dom, {
+        scale: 0.96,
+        duration: 1.0,
+        ease: "power2.inOut",
+      })
+      gsap.to(this.details, {
+        y: 0,
+        duration: 1.0,
+        ease: "power2.inOut",
+      })
+    } else {
+      // Desktop/Tablet: horizontal slide
+      gsap.to(this.dom, {
+        x: "-50vw",
+        duration: 1.6,
+        ease: "power2.inOut",
+      })
+      gsap.to(this.details, {
+        x: 0,
+        duration: 1.6,
+        ease: "power2.inOut",
+      })
+    }
 
     this.flipProduct(product)
 
@@ -381,22 +403,38 @@ class Grid {
 
     this.dom.classList.remove("--is-details-showing")
 
-    gsap.to(this.dom, {
-      x: 0,
-      duration: 1.6,
-      delay: .4,
-      ease: "power2.inOut",
-      onComplete: () => {
-        this.details.classList.remove("--is-showing")
-      }
-    })
-
-    gsap.to(this.details, {
-      x: "50vw",
-      duration: 1.6,
-      delay: .4,
-      ease: "power2.inOut"
-    })
+    if (this.isMobile()) {
+      gsap.to(this.dom, {
+        scale: 1,
+        duration: 0.8,
+        delay: .2,
+        ease: "power2.inOut",
+        onComplete: () => {
+          this.details.classList.remove("--is-showing")
+        }
+      })
+      gsap.to(this.details, {
+        y: "100vh",
+        duration: 0.9,
+        ease: "power2.inOut"
+      })
+    } else {
+      gsap.to(this.dom, {
+        x: 0,
+        duration: 1.6,
+        delay: .4,
+        ease: "power2.inOut",
+        onComplete: () => {
+          this.details.classList.remove("--is-showing")
+        }
+      })
+      gsap.to(this.details, {
+        x: "50vw",
+        duration: 1.6,
+        delay: .4,
+        ease: "power2.inOut"
+      })
+    }
 
     this.unFlipProduct()
 
@@ -613,6 +651,11 @@ class Grid {
       ease: "power2.out"
     })
   }
+
+  // Helper: detect mobile viewport
+  isMobile() {
+    return window.matchMedia('(max-width: 768px)').matches
+  }
 }
 
 // Generate HTML content first
@@ -628,7 +671,6 @@ window.gridInstance = grid
 const preloaderEl = document.getElementById('preloader-animation')
 document.body.style.overflow = 'hidden'
 
-const imagesReady = preloadImages('.grid img')
 const timelineReady = new Promise((resolve) => {
   const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
   tl.set('.animation', { yPercent: 0, force3D: true })
@@ -637,7 +679,7 @@ const timelineReady = new Promise((resolve) => {
     .add(() => resolve())
 })
 
-Promise.all([imagesReady, timelineReady]).then(() => {
+timelineReady.then(() => {
   if (preloaderEl) {
     preloaderEl.style.display = 'none'
   }
